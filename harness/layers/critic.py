@@ -86,7 +86,7 @@ class Critic(Middleware):
         docs = ctx.corpus.docs if ctx.corpus is not None else []
         for claim in claims:
             text = claim.get("text", "") if isinstance(claim, dict) else ""
-            if not isinstance(text, str) or not text:
+            if not isinstance(text, str) or not text or len(text.splitlines()) != 1:
                 continue
             if text in observed:
                 kept.append(claim)
@@ -106,7 +106,8 @@ class Critic(Middleware):
                     report["abstain"] = True
                     break
         report["claims"] = kept
-        report["citations"] = sorted({c["doc_id"] for c in kept if c.get("doc_id")})
+        report["citations"] = sorted({c["doc_id"] for c in kept
+                                      if isinstance(c.get("doc_id"), str) and c["doc_id"]})
         if not kept:
             report["abstain"] = True
             report["answer"] = "Không đủ căn cứ trong bằng chứng đã quan sát để trả lời."

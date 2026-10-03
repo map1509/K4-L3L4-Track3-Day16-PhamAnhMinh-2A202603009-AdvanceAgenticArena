@@ -78,7 +78,8 @@ class CitationChecker(Middleware):
             text = claim.get("text", "")
             if not isinstance(text, str) or not text:
                 continue
-            doc = ctx.corpus.get(claim.get("doc_id"))
+            doc_id = claim.get("doc_id")
+            doc = ctx.corpus.get(doc_id) if isinstance(doc_id, str) else None
             if doc is not None and any(text in line for line in doc.body.splitlines()):
                 continue
             for source in ctx.corpus.docs:
@@ -86,5 +87,6 @@ class CitationChecker(Middleware):
                     claim["doc_id"] = source.doc_id
                     break
         report["citations"] = sorted({c["doc_id"] for c in claims
-                                      if isinstance(c, dict) and c.get("doc_id")})
+                                      if isinstance(c, dict)
+                                      and isinstance(c.get("doc_id"), str) and c["doc_id"]})
         return report
